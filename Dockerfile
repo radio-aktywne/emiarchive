@@ -1,0 +1,30 @@
+ARG MINIO_CLIENT_IMAGE_TAG=RELEASE.2022-03-17T20-25-06Z
+ARG MINIO_IMAGE_TAG=RELEASE.2022-03-24T00-43-44Z
+
+FROM minio/mc:$MINIO_CLIENT_IMAGE_TAG AS mc
+
+FROM minio/minio:$MINIO_IMAGE_TAG
+
+COPY --from=mc /usr/bin/mc /usr/bin/mc
+
+WORKDIR /app
+
+COPY ./emiarchive/start.sh ./start.sh
+RUN chmod +x ./start.sh
+
+COPY ./emiarchive/conf/ ./conf/
+
+ENV EMIARCHIVE_PORT=30000 \
+    EMIARCHIVE_ADMIN_PORT=30001 \
+    EMIARCHIVE_ADMIN_USER=admin \
+    EMIARCHIVE_ADMIN_PASSWORD=password \
+    EMIARCHIVE_READONLY_USER=readonly \
+    EMIARCHIVE_READONLY_PASSWORD=password \
+    EMIARCHIVE_READWRITE_USER=readwrite \
+    EMIARCHIVE_READWRITE_PASSWORD=password
+
+EXPOSE 30000
+EXPOSE 30001
+
+ENTRYPOINT ["./start.sh"]
+CMD []
